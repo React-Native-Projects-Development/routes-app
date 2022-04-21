@@ -1,8 +1,9 @@
-import React, {createContext, useCallback, useEffect, useState} from 'react';
+import React, {createContext, useEffect, useState} from 'react';
 import {AppState, Platform} from 'react-native';
 
 import {
   check,
+  openSettings,
   PERMISSIONS,
   PermissionStatus,
   request,
@@ -38,13 +39,17 @@ export const PermissionsProvider = ({children}: any) => {
       );
     }
 
+    if (permissionStatus === 'blocked') {
+      openSettings();
+    }
+
     setPermissions({
       ...permissions,
       locationStatus: permissionStatus,
     });
   };
 
-  const checkLocationPermission = useCallback(async () => {
+  const checkLocationPermission = async () => {
     let permissionStatus: PermissionStatus;
 
     if (Platform.OS === 'ios') {
@@ -57,10 +62,10 @@ export const PermissionsProvider = ({children}: any) => {
       ...prevState,
       locationStatus: permissionStatus,
     }));
-  }, []);
+  };
 
   useEffect(() => {
-    // checkLocationPermission();
+    checkLocationPermission();
     const appListener = AppState.addEventListener('change', state => {
       if (state !== 'active') {
         return;
@@ -72,7 +77,7 @@ export const PermissionsProvider = ({children}: any) => {
     return () => {
       appListener.remove();
     };
-  }, [checkLocationPermission]);
+  }, []);
 
   return (
     <PermissionsContext.Provider
